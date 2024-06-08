@@ -1,31 +1,31 @@
-name: crowdin
-on:
-  push:
-    branches:
-      - master
-# run sequentially (per branch)
-concurrency: "crowdin-upload-${{ github.ref }}"
+concurrency: crowdin-upload-${{ github.ref }}
 jobs:
   upload-sources:
-    runs-on: ubuntu-latest
     if: github.repository == 'beemdevelopment/Aegis'
+    runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
-      - name: Install crowdin-cli
-        run: |
-          wget https://github.com/crowdin/crowdin-cli/releases/download/3.7.2/crowdin-cli.zip
-          echo "ee9f838b819ccedc33c9b2537055e5ba7d7934561b24df1e1a6274cbd6e27f2d  crowdin-cli.zip" | sha256sum -c
-          unzip crowdin-cli.zip -d crowdin-cli
-      - name: Upload to Crowdin
-        env:
-          CROWDIN_TOKEN: "${{ secrets.CROWDIN_TOKEN }}"
-        run: |
-          java -jar ./crowdin-cli/3.7.2/crowdin-cli.jar upload sources \
-            --no-progress \
-            --token "$CROWDIN_TOKEN" \
-            --project-id 372633 \
-            --base-path app/src/main \
-            --source res/values/strings.xml \
-            --translation "res/values-%android_code%/%original_file_name%" \
-            --dest strings.xml \
-            --branch master
+    - continue-on-error: true
+      uses: actions/checkout@v4
+    - continue-on-error: true
+      name: Install crowdin-cli
+      run: 'wget https://github.com/crowdin/crowdin-cli/releases/download/3.7.2/crowdin-cli.zip
+
+        echo "ee9f838b819ccedc33c9b2537055e5ba7d7934561b24df1e1a6274cbd6e27f2d  crowdin-cli.zip"
+        | sha256sum -c
+
+        unzip crowdin-cli.zip -d crowdin-cli
+
+        '
+    - continue-on-error: true
+      env:
+        CROWDIN_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
+      name: Upload to Crowdin
+      run: "java -jar ./crowdin-cli/3.7.2/crowdin-cli.jar upload sources \\\n  --no-progress\
+        \ \\\n  --token \"$CROWDIN_TOKEN\" \\\n  --project-id 372633 \\\n  --base-path\
+        \ app/src/main \\\n  --source res/values/strings.xml \\\n  --translation \"\
+        res/values-%android_code%/%original_file_name%\" \\\n  --dest strings.xml\
+        \ \\\n  --branch master\n"
+name: crowdin
+on:
+  repository_dispatch:
+    types: trigger-ga___crowdin.yml
